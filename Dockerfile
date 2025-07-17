@@ -1,14 +1,12 @@
-# Use a base image with Java 17
-FROM openjdk:17-jdk-slim
-
-# Set working directory
+# Step 1: Use Maven to build the project
+FROM maven:3.8.1-openjdk-17 AS build
 WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
 
-# Copy the jar file (from Maven target directory)
-COPY target/helloworld-0.0.1-SNAPSHOT.jar app.jar
-
-# Expose port 8080
+# Step 2: Run the built JAR using OpenJDK
+FROM openjdk:17
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-
-# Run the jar file
 ENTRYPOINT ["java", "-jar", "app.jar"]
